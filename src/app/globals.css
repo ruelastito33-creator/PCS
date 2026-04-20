@@ -1,26 +1,101 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces */
+  --surface: #ffffff;
+  --surface-alt: #fafafa;
+  --surface-muted: #f4f4f5;
+
+  /* Text */
+  --text-primary: #18181b;
+  --text-secondary: #52525b;
+  --text-muted: #71717a;
+  --text-faint: #a1a1aa;
+  --text-ghost: #d4d4d8;
+
+  /* Borders */
+  --border: #e4e4e7;
+  --border-light: #f4f4f5;
+  --border-strong: #d4d4d8;
+
+  /* Interactive */
+  --hover-surface: #fafafa;
+  --hover-surface-strong: #f4f4f5;
+
+  /* Input */
+  --input-border: #d4d4d8;
+  --input-bg: #ffffff;
+
+  /* Legacy */
+  --background: #fafafa;
+  --foreground: #18181b;
+}
+
+.dark {
+  --surface: #111827;
+  --surface-alt: #0b0f1a;
+  --surface-muted: #1e2536;
+
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-faint: #475569;
+  --text-ghost: #334155;
+
+  --border: #1e293b;
+  --border-light: #172033;
+  --border-strong: #334155;
+
+  --hover-surface: #1e2536;
+  --hover-surface-strong: #283044;
+
+  --input-border: #334155;
+  --input-bg: #1e2536;
+
+  --background: #0b0f1a;
+  --foreground: #f1f5f9;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-surface-muted: var(--surface-muted);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
+  --color-text-ghost: var(--text-ghost);
+  --color-border: var(--border);
+  --color-border-light: var(--border-light);
+  --color-border-strong: var(--border-strong);
+  --color-hover-surface: var(--hover-surface);
+  --color-hover-surface-strong: var(--hover-surface-strong);
+  --color-input-border: var(--input-border);
+  --color-input-bg: var(--input-bg);
+  --color-orange-50: #fff7ed;
+  --color-orange-100: #ffedd5;
+  --color-orange-500: #f97316;
+  --color-orange-600: #ea580c;
+  --color-orange-700: #c2410c;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  /* Tablet UX: elimina 300ms tap delay y flash azul en taps */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  /* Previene pull-to-refresh accidental en Android */
+  overscroll-behavior: contain;
 }
+
+/* Hide scrollbar for POS field tabs */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
