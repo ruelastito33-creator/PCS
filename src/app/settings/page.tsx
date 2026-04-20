@@ -3,6 +3,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { prisma } from "@/lib/prisma";
 import { CHOFER_ROUTE_LAYOUT, routePrimaryPuestos } from "@/lib/chofer-routes";
 import { SettingsTabs } from "./components/settings-tabs";
+import { UsuariosAdmin } from "./components/usuarios-admin";
 
 export default async function SettingsPage() {
   const profile = await getPageProfile("OPERACIONES");
@@ -122,58 +123,10 @@ export default async function SettingsPage() {
             Usuarios del sistema
           </h3>
           <p className="mb-4 text-sm text-text-muted">
-            Para agregar usuarios usa el dashboard de Supabase y el script{" "}
-            <code className="rounded bg-surface-muted px-1 text-xs">
-              scripts/create-user.ts
-            </code>
-            .
+            Alta, cambio de rol, activacion y reset de contrasena desde esta
+            pantalla.
           </p>
-          <div className="overflow-hidden rounded-lg border border-border bg-surface">
-            <table className="min-w-full divide-y divide-border">
-              <thead className="bg-surface-alt">
-                <tr>
-                  <th className="px-4 py-2 text-left text-xs font-semibold uppercase text-text-muted">
-                    Nombre
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold uppercase text-text-muted">
-                    Email
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold uppercase text-text-muted">
-                    Rol
-                  </th>
-                  <th className="px-4 py-2 text-center text-xs font-semibold uppercase text-text-muted">
-                    Estado
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border-light">
-                {usuarios.map((u) => (
-                  <tr key={u.id} className="hover:bg-hover-surface">
-                    <td className="px-4 py-2 text-sm font-medium text-text-primary">
-                      {u.full_name}
-                    </td>
-                    <td className="px-4 py-2 text-sm text-text-muted">
-                      {u.email}
-                    </td>
-                    <td className="px-4 py-2 text-sm text-text-muted">
-                      {u.role.replace(/_/g, " ")}
-                    </td>
-                    <td className="px-4 py-2 text-center">
-                      <span
-                        className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                          u.is_active
-                            ? "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400"
-                            : "bg-surface-muted text-text-faint"
-                        }`}
-                      >
-                        {u.is_active ? "Activo" : "Inactivo"}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <UsuariosAdmin usuarios={usuarios} />
         </section>
       </div>
     </AppShell>
