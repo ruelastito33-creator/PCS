@@ -1,0 +1,173 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Auth / Users ───────────────────────────────────────────────
+
+model Profile {
+  id         String   @id @db.Uuid // matches Supabase auth.users.id
+  email      String   @unique
+  full_name  String
+  role       Role     @default(CHOFER)
+  pin        String? // hashed 4-digit PIN for tablet login
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  bitacora Bitacora[]
+
+  @@map("profiles")
+}
+
+enum Role {
+  OPERACIONES
+  COCINA
+  CHOFER
+  SURTIDOR_AGUAS
+  HIELERA
+  INSUMOS
+}
+
+// ─── Catálogos de personas ──────────────────────────────────────
+
+model Vendedora {
+  id         Int      @id @default(autoincrement())
+  nombre     String   @unique
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+
+  @@map("vendedoras")
+}
+
+model Chofer {
+  id         Int      @id @default(autoincrement())
+  nombre     String   @unique
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+
+  @@map("choferes")
+}
+
+model ProveedoraTacos {
+  id         Int      @id @default(autoincrement())
+  nombre     String   @unique
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+
+  producciones Produccion[]
+
+  @@map("proveedoras_tacos")
+}
+
+// ─── Puestos (catálogo) ─────────────────────────────────────────
+
+model Puesto {
+  id               Int      @id @default(autoincrement())
+  nombre           String   @unique
+  is_active        Boolean  @default(true)
+  orden            Int      @default(0)
+  /// Fila técnica para pedidos adicionales sin puesto de catálogo (un registro por BD).
+  es_fuera_puesto  Boolean  @default(false)
+  /// Cantidad por defecto en cocina (texto: "1", "1/2", "1/6").
+  salsa_roja_default String @default("1")
+  cebolla_default    String @default("1")
+  created_at       DateTime @default(now())
+
+  producciones Produccion[]
+
+  @@map("puestos")
+}
+
+// ─── Comanda (una por día) ──────────────────────────────────────
+
+model Comanda {
+  id         String        @id @default(uuid()) @db.Uuid
+  fecha      DateTime      @unique          // UNA comanda por día — medianoche UTC
+  estado     ComandaEstado @default(ABIERTA)
+  notas      String?       @db.Text
+  created_by String?       @db.Uuid
+  created_at DateTime      @default(now())
+  updated_at DateTime      @updatedAt
+  closed_at  DateTime?
+
+  producciones Produccion[]
+  bitacora     Bitacora[]
+
+  @@index([fecha])
+  @@map("comandas")
+}
+
+enum ComandaEstado {
+  ABIERTA
+  EN_PROCESO
+  CERRADA
+}
+
+// ─── Producción (una o más filas por puesto por comanda) ────────
+
+model Produccion {
+  id              String           @id @default(uuid()) @db.Uuid
+  comanda_id      String           @db.Uuid
+  puesto_id       Int
+  numero_pedido   Int              @default(1) // 1 = base por puesto real; 2+ = pedidos fuera de puesto (puesto técnico)
+  /// Quién solicitó el pedido cuando no aplica un puesto de catálogo (pedidos adicionales).
+  solicitante     String?
+  proveedora_tacos_id Int?
+  vendedora       String?
+  tacos           Int              @default(0)
+  chofer          String?
+  /// Bolsas de salsa de tomate — mismo valor que `insumos.tomate` (sync en app).
+  bolsas          Float            @default(0)
+  aguas           Int              @default(0)
+  medida          String?
+  tortillas       Int              @default(0)
+  insumos         Json?            @default("{}")
+  hieleras        Int              @default(0)
+  hora            String?
+  estado          ProduccionEstado @default(PENDIENTE)
+  tacos_sobrantes Int?             @default(0)
+  inasistencia    Boolean          @default(false)
+  notas           String?          @db.Text
+
+  comanda Comanda @relation(fields: [comanda_id], references: [id], onDelete: Cascade)
+  puesto  Puesto  @relation(fields: [puesto_id], references: [id])
+  proveedora_tacos ProveedoraTacos? @relation(fields: [proveedora_tacos_id], references: [id], onDelete: SetNull)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([comanda_id, puesto_id, numero_pedido])
+  @@index([comanda_id])
+  @@index([puesto_id])
+  @@map("produccion")
+}
+
+enum ProduccionEstado {
+  PENDIENTE
+  EN_PROCESO
+  LISTO
+  ENTREGADO
+}
+
+// ─── Bitácora (log de cambios) ──────────────────────────────────
+
+model Bitacora {
+  id         String   @id @default(uuid()) @db.Uuid
+  comanda_id String   @db.Uuid
+  evento     String
+  detalle    Json?    @default("{}")
+  usuario_id String?  @db.Uuid
+  created_at DateTime @default(now())
+
+  comanda Comanda  @relation(fields: [comanda_id], references: [id], onDelete: Cascade)
+  usuario Profile? @relation(fields: [usuario_id], references: [id])
+
+  @@index([comanda_id])
+  @@index([created_at])
+  @@map("bitacora")
+}
