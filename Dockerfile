@@ -1,4 +1,4 @@
-# Stage 1: Install dependencies
+﻿# Stage 1: Install dependencies
 FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
@@ -8,9 +8,13 @@ RUN npm ci --ignore-scripts
 # Stage 2: Build the application
 FROM node:22-alpine AS builder
 WORKDIR /app
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# Generate Prisma client (pure JS adapter — no native binaries needed)
+# Generate Prisma client (pure JS adapter - no native binaries needed)
 RUN npx prisma generate
 RUN npm run build
 
