@@ -1,41 +1,9 @@
-﻿"use client";
+type LoginPageProps = {
+  searchParams: Promise<{ error?: string }>;
+};
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
-
-export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        setError(error.message);
-        return;
-      }
-
-      router.push("/");
-      router.refresh();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Error al iniciar sesion");
-    } finally {
-      setLoading(false);
-    }
-  }
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const { error } = await searchParams;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-surface-alt px-4">
@@ -48,7 +16,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form action="/auth/login" method="post" className="space-y-4">
           {error && (
             <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-500/10 dark:text-red-400">
               {error}
@@ -56,41 +24,46 @@ export default function LoginPage() {
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-text-secondary">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-text-secondary"
+            >
               Correo electronico
             </label>
             <input
               id="email"
+              name="email"
               type="email"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
               className="mt-1 block w-full rounded-lg border border-input-border bg-input-bg px-3 py-3 text-base text-text-primary shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
               placeholder="correo@ejemplo.com"
+              autoComplete="email"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-text-secondary">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-text-secondary"
+            >
               Contrasena
             </label>
             <input
               id="password"
+              name="password"
               type="password"
               required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
               className="mt-1 block w-full rounded-lg border border-input-border bg-input-bg px-3 py-3 text-base text-text-primary shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
               placeholder="********"
+              autoComplete="current-password"
             />
           </div>
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-orange-600 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50"
+            className="w-full rounded-lg bg-orange-600 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
           >
-            {loading ? "Iniciando sesion..." : "Iniciar Sesion"}
+            Iniciar Sesion
           </button>
         </form>
       </div>
