@@ -1,23 +1,23 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+function redirectRelative(path: string) {
+  return new NextResponse(null, {
+    status: 303,
+    headers: { Location: path },
+  });
+}
+
 export async function POST(request: NextRequest) {
   const formData = await request.formData();
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
   if (!email || !password) {
-    const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
-    loginUrl.searchParams.set("error", "Correo y contrasena son requeridos.");
-    return NextResponse.redirect(loginUrl);
+    return redirectRelative("/login?error=Correo+y+contrasena+son+requeridos.");
   }
 
-  const successUrl = request.nextUrl.clone();
-  successUrl.pathname = "/";
-  successUrl.search = "";
-
-  const response = NextResponse.redirect(successUrl);
+  const response = redirectRelative("/");
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -38,10 +38,7 @@ export async function POST(request: NextRequest) {
 
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
-    const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
-    loginUrl.searchParams.set("error", error.message);
-    return NextResponse.redirect(loginUrl);
+    return redirectRelative(`/login?error=${encodeURIComponent(error.message)}`);
   }
 
   return response;
