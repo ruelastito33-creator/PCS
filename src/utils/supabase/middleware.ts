@@ -5,6 +5,7 @@ export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
+  const pathname = request.nextUrl.pathname;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -34,7 +35,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Root → redirect based on auth status
-  if (request.nextUrl.pathname === "/") {
+  if (pathname === "/") {
     const url = request.nextUrl.clone();
     if (!user) {
       url.pathname = "/login";
@@ -46,14 +47,21 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Protect all routes except /login and /auth
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth") &&
-    !request.nextUrl.pathname.startsWith("/api/health") &&
-    !request.nextUrl.pathname.startsWith("/api/kiosk") &&
-    !request.nextUrl.pathname.startsWith("/_next")
-  ) {
+  const isPublicPath =
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/api/health") ||
+    pathname.startsWith("/api/kiosk") ||
+    pathname.startsWith("/_next") ||
+    pathname === "/manifest.webmanifest" ||
+    pathname === "/sw.js" ||
+    pathname === "/offline.html" ||
+    pathname === "/favicon.ico";
+
+  // Allow static asset requests (fonts, images, scripts, css, manifest, etc.)
+  const isAssetFile = /\.[a-zA-Z0-9]+$/.test(pathname);
+
+  if (!user && !isPublicPath && !isAssetFile) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
