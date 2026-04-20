@@ -39,7 +39,6 @@ function CatalogRow({
   const [isRenamePending, startRename] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { setValue(item.nombre); }, [item.nombre]);
   useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
 
   function handleSave() {
@@ -78,7 +77,10 @@ function CatalogRow({
         ) : (
           <button
             type="button"
-            onClick={() => setEditing(true)}
+            onClick={() => {
+              setValue(item.nombre);
+              setEditing(true);
+            }}
             disabled={isRenamePending}
             title="Clic para renombrar"
             className="group/btn flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-sm font-medium text-text-primary hover:bg-orange-50 dark:hover:bg-orange-500/10 disabled:opacity-50"

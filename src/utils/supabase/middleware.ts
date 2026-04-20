@@ -1,7 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { ROLE_HOME } from "@/lib/constants";
-import type { Role } from "@prisma/client";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({

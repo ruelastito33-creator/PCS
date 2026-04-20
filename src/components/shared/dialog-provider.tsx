@@ -58,11 +58,8 @@ type OpenState = AlertState | ConfirmState | null;
 
 export function DialogProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState<OpenState>(null);
-  const [mounted, setMounted] = useState(false);
   const titleId = useId();
   const descId = useId();
-
-  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!open) return;
@@ -120,7 +117,7 @@ export function DialogProvider({ children }: { children: React.ReactNode }) {
   }, [open]);
 
   const overlay =
-    open && mounted ? (
+    open ? (
       <div
         className="fixed inset-0 z-[300] flex items-center justify-center bg-black/55 p-4 backdrop-blur-[2px]"
         role="presentation"
@@ -168,7 +165,9 @@ export function DialogProvider({ children }: { children: React.ReactNode }) {
   return (
     <DialogContext.Provider value={{ alert: alertFn, confirm: confirmFn }}>
       {children}
-      {mounted && overlay ? createPortal(overlay, document.body) : null}
+      {typeof document !== "undefined" && overlay
+        ? createPortal(overlay, document.body)
+        : null}
     </DialogContext.Provider>
   );
 }

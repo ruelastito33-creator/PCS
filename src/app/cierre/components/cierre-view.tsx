@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition, useCallback } from "react";
+import { useState, useTransition, useCallback } from "react";
 import { useViewMode } from "@/hooks/use-view-mode";
 import { ViewToggle } from "@/components/shared/view-toggle";
 import { CierreTable } from "./cierre-table";
@@ -12,8 +12,6 @@ import { etiquetaPuestoProduccion } from "@/lib/puesto-fuera";
 type Row = Produccion & { puesto: Puesto; proveedora_tacos: ProveedoraTacos | null };
 
 // ─── Keys ────────────────────────────────────────────────────────────────────
-const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "C", "0", ".", "⌫"] as const;
-
 const ESTADO_BADGE: Record<string, string> = {
   PENDIENTE: "bg-surface-muted text-text-muted",
   EN_PROCESO: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400",
@@ -120,14 +118,6 @@ function CierreSheet({ row, onClose }: { row: Row; onClose: () => void }) {
   const [inasistencia, setInasistencia] = useState(row.inasistencia);
   const [notas, setNotas] = useState(row.notas ?? "");
 
-  // Reset when row changes
-  useEffect(() => {
-    setSobrantes(String(row.tacos_sobrantes ?? 0) || "0");
-    setInasistencia(row.inasistencia);
-    setNotas(row.notas ?? "");
-    setActiveIdx(0);
-  }, [row.id, row.tacos_sobrantes, row.inasistencia, row.notas]);
-
   const activeField = CIERRE_FIELDS[activeIdx];
 
   function handleKey(key: string) {
@@ -185,8 +175,6 @@ function CierreSheet({ row, onClose }: { row: Row; onClose: () => void }) {
       onClose();
     });
   }, [sobrantes, inasistencia, notas, row.id, onClose, showAlert]);
-
-  const isLast = activeIdx === CIERRE_FIELDS.length - 1;
 
   return (
     <>
@@ -413,7 +401,11 @@ function CierreCards({ producciones, isClosed }: { producciones: Row[]; isClosed
       </div>
 
       {freshRow && !isClosed && (
-        <CierreSheet row={freshRow} onClose={() => setActiveRow(null)} />
+        <CierreSheet
+          key={`${freshRow.id}:${String(freshRow.updated_at)}:${freshRow.tacos_sobrantes ?? 0}:${freshRow.inasistencia ? 1 : 0}:${freshRow.notas ?? ""}`}
+          row={freshRow}
+          onClose={() => setActiveRow(null)}
+        />
       )}
     </>
   );

@@ -1,4 +1,3 @@
-import { redis } from "@/lib/redis";
 import { SSE_CHANNEL } from "@/lib/sse/events";
 import Redis from "ioredis";
 

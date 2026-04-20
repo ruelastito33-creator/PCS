@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition, useCallback } from "react";
+import { useState, useTransition, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useViewMode } from "@/hooks/use-view-mode";
 import { ViewToggle } from "@/components/shared/view-toggle";
@@ -45,8 +45,6 @@ const FIELDS: FieldDef[] = [
   { key: "salsa_roja", label: "S.Roja", color: "text-rose-400", bgActive: "bg-rose-500/20 ring-rose-500/40", bgDot: "bg-rose-500" },
   { key: "aguas", label: "Aguas", color: "text-sky-400", bgActive: "bg-sky-500/20 ring-sky-500/40", bgDot: "bg-sky-500" },
 ];
-
-const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "C", "0", ".", "⌫"] as const;
 
 function buildCocinaFormValues(row: Row): Record<string, string> {
   const merged = insumosDataWithTomateFromBolsas({
@@ -244,13 +242,6 @@ function CocinaSheet({
 
   const activeField = FIELDS[activeIdx];
   const activeValue = values[activeField.key];
-
-  // Reset when row changes
-  useEffect(() => {
-    setValues(buildCocinaFormValues(row));
-    setActiveIdx(0);
-    setProveedoraId(row.proveedora_tacos_id ?? null);
-  }, [row.id, row.tortillas, row.insumos, row.bolsas, row.aguas, row.proveedora_tacos_id]);
 
   function handleKey(key: string) {
     const fieldKey = activeField.key;
@@ -615,6 +606,7 @@ function CocinaCards({
 
       {freshRow && (
         <CocinaSheet
+          key={`${freshRow.id}:${String(freshRow.updated_at)}:${freshRow.tortillas}:${freshRow.aguas}:${freshRow.bolsas}:${freshRow.proveedora_tacos_id ?? ""}:${JSON.stringify(freshRow.insumos ?? {})}`}
           row={freshRow}
           onClose={() => setActiveRow(null)}
           proveedorasOpciones={proveedorasOpciones}

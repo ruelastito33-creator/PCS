@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
 import { SessionWatchdog } from "../kiosk/session-watchdog";
@@ -19,14 +19,10 @@ export function AppShell({ role, userName, title, children }: AppShellProps) {
   // Mobile overlay open
   const [mobileOpen, setMobileOpen] = useState(false);
   // Desktop collapsed (persisted)
-  const [collapsed, setCollapsed] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === "true") setCollapsed(true);
-    setHydrated(true);
-  }, []);
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(STORAGE_KEY) === "true";
+  });
 
   function toggleCollapsed() {
     setCollapsed((prev) => {
@@ -40,7 +36,7 @@ export function AppShell({ role, userName, title, children }: AppShellProps) {
     // On mobile: open/close overlay
     // On desktop: collapse/expand
     if (window.innerWidth < 1024) {
-      setMobileOpen(!mobileOpen);
+      setMobileOpen((prev) => !prev);
     } else {
       toggleCollapsed();
     }
@@ -63,7 +59,7 @@ export function AppShell({ role, userName, title, children }: AppShellProps) {
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         } ${
           // Desktop: show/hide based on collapsed
-          hydrated && collapsed ? "lg:hidden" : "lg:translate-x-0"
+          collapsed ? "lg:hidden" : "lg:translate-x-0"
         }`}
       >
         <Sidebar role={role} userName={userName} onClose={() => setMobileOpen(false)} />
@@ -74,7 +70,7 @@ export function AppShell({ role, userName, title, children }: AppShellProps) {
         <Header
           title={title}
           onToggleSidebar={handleToggle}
-          sidebarCollapsed={hydrated && collapsed}
+          sidebarCollapsed={collapsed}
         />
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
       </div>

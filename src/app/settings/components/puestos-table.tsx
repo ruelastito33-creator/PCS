@@ -2,7 +2,6 @@
 
 import { useState, useTransition, useRef, useEffect } from "react";
 import type { Puesto } from "@prisma/client";
-import type { ActionResult } from "@/lib/types";
 import { useDialogs } from "@/components/shared/dialog-provider";
 import {
   crearPuesto,
@@ -103,12 +102,6 @@ function PuestoRow({
   const [isFraccionPending, startFraccion] = useTransition();
 
   useEffect(() => {
-    setNombre(puesto.nombre);
-    setSr(defaultFraccion(puesto.salsa_roja_default));
-    setCb(defaultFraccion(puesto.cebolla_default));
-  }, [puesto]);
-
-  useEffect(() => {
     if (editing) inputRef.current?.focus();
   }, [editing]);
 
@@ -164,7 +157,10 @@ function PuestoRow({
         ) : (
           <button
             type="button"
-            onClick={() => setEditing(true)}
+            onClick={() => {
+              setNombre(puesto.nombre);
+              setEditing(true);
+            }}
             disabled={isPending}
             title="Clic para renombrar"
             className="group/btn flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-sm font-semibold text-text-primary hover:bg-orange-50 dark:hover:bg-orange-500/10 disabled:opacity-50"
@@ -314,7 +310,7 @@ export function PuestosTable({ items }: { items: Puesto[] }) {
             ) : (
               items.map((p, idx) => (
                 <PuestoRow
-                  key={p.id}
+                  key={`${p.id}:${p.nombre}:${p.salsa_roja_default}:${p.cebolla_default}:${p.is_active ? 1 : 0}`}
                   puesto={p}
                   idx={idx}
                   isToggling={isToggling}
